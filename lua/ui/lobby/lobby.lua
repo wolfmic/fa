@@ -1896,7 +1896,14 @@ local function HostUpdateMods(newPlayerID, newPlayerName)
 
             local mods = {}
             for uid, _ in gameInfo.GameMods do
-                table.insert(mods, uid)
+                local mod = Mods.AllMods()[uid]
+                local mod_version = Mods.GetLocalModVersion(uid)
+                if mod and mod_version then
+                    LOG(mod_version)
+                    table.insert(mods, uid .. ":".. mod_version.hash)
+                else
+                    LOG("Mod "..uid.." version not found")
+                end
             end
 
             GpgNetSend('GameMods', unpack(mods))
