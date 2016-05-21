@@ -17,12 +17,14 @@ local Movie = import('/lua/maui/movie.lua').Movie
 local Prefs = import('/lua/user/prefs.lua')
 local options = Prefs.GetFromCurrentProfile('options')
 
-local gameParent = false
-local controlClusterGroup = false
-local statusClusterGroup = false
-local mapGroup = false
-local mfdControl = false
-local ordersControl = false
+local controls = import('/lua/ui/controls.lua').Get()
+
+local gameParent = controls.gameParent
+local controlClusterGroup = controls.cluster
+local statusClusterGroup = controls.status
+local mapGroup = controls.map
+local mfdControl = controls.mfd
+local ordersControl = controls.orders
 
 local OnDestroyFuncs = {}
 
@@ -165,9 +167,15 @@ function CreateUI(isReplay)
 
     GameCommon.InitializeUnitIconBitmaps(prefetchTable.batch_textures)
 
-    gameParent = UIUtil.CreateScreenGroup(GetFrame(0), "GameMain ScreenGroup")
+    controls.gameParent = UIUtil.CreateScreenGroup(GetFrame(0), "GameMain ScreenGroup")
+    gameParent = controls.gameParent
 
     controlClusterGroup, statusClusterGroup, mapGroup, windowGroup = import('/lua/ui/game/borders.lua').SetupBorderControl(gameParent)
+
+    controls.cluster = controlClusterGroup
+    controls.status = statusClusterGroup
+    controls.map = mapGroup
+    controls.window = windowGroup
 
     controlClusterGroup:SetNeedsFrameUpdate(true)
     controlClusterGroup.OnFrame = function(self, deltaTime)
@@ -182,10 +190,13 @@ function CreateUI(isReplay)
     import('/lua/ui/game/tabs.lua').Create(mapGroup)
 
     mfdControl = import('/lua/ui/game/multifunction.lua').Create(controlClusterGroup)
+    controls.mfd = mfdControl
+
     if not isReplay then
         ordersControl = import('/lua/ui/game/orders.lua').SetupOrdersControl(controlClusterGroup, mfdControl)
-
+        controls.ordersControl  = ordersControl
     end
+
     import('/lua/ui/game/avatars.lua').CreateAvatarUI(mapGroup)
     import('/lua/ui/game/construction.lua').SetupConstructionControl(controlClusterGroup, mfdControl, ordersControl)
     import('/lua/ui/game/unitview.lua').SetupUnitViewLayout(mapGroup, ordersControl)
